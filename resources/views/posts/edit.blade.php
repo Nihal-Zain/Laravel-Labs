@@ -18,12 +18,19 @@
             </ul>
         </div>
     </nav>
-
+    @if ($errors->any())    
+    <div class="bg-red-500 text-white p-4 text-center text-xl rounded-lg">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+    </div>
+    @endif
     <!-- Form Container -->
     <div class="mt-6 flex justify-center w-full">
         <div class="w-full max-w-lg bg-white p-6 rounded-lg shadow-lg">
             <h2 class="text-2xl font-semibold text-gray-800 mb-4">Edit Post</h2>
-            <form action="{{ route('posts.update', ['id' => $post['id']]) }}" method="POST" class="space-y-4">
+            <form action="{{ route('posts.update',$post->id) }}" method="POST" class="space-y-4" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 
@@ -38,17 +45,23 @@
     <div>
         <label class="block text-gray-700 font-medium">Description</label>
         <textarea name="description" rows="4"
-            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none">{{ $post['description'] }}</textarea>
+            class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none">{{ $post->description }}</textarea>
     </div>
 
     <!-- Post Creator -->
     <div>
         <label class="block text-gray-700 font-medium">Post Creator</label>
-        <select name="name" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none">
-            <option value="John Doe" {{ $post['postedBy']['name'] == 'John Doe' ? 'selected' : '' }}>John Doe</option>
-            <option value="Jane Smith" {{ $post['postedBy']['name'] == 'Jane Smith' ? 'selected' : '' }}>Jane Smith</option>
-            <option value="Alice Johnson" {{ $post['postedBy']['name'] == 'Alice Johnson' ? 'selected' : '' }}>Alice Johnson</option>
+        <select name="user_id" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none">
+            @foreach ($users as $user)
+            <option value="{{$user->id}}" {{ $user->id == $post->user_id ? 'selected' : '' }}>{{$user->name}}</option>
+            @endforeach
         </select>
+    </div>
+
+    <!-- Image -->
+    <div>
+        <label class="block text-gray-700 font-medium">Upload Image</label>
+        <input type="file" name="image" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none" accept="image/*">
     </div>
 
     <!-- Update Button -->

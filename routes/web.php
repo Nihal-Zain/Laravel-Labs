@@ -1,8 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestController;
-
+use App\Http\Controllers\CommentController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,15 +17,34 @@ use App\Http\Controllers\TestController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware(['auth'])->group(function(){
+    Route::resource('posts',TestController::class);
+    Route::resource('comments',CommentController::class);
+    Route::patch('posts/{post}/restore', [TestController::class, 'restore'])->name('posts.restore');
 });
-Route::get('/posts', [TestController::class, 'index'])->name('posts.index');
-Route::get('/posts/create', [TestController::class, 'create'])->name('posts.create');
-Route::post('/posts', [TestController::class, 'store'])->name('posts.store');
-Route::get('/posts/{id}', [TestController::class, 'show'])->name('posts.show');
-Route::get('/posts/{id}/edit', [TestController::class, 'edit'])->name('posts.edit');
-Route::delete('/posts/{id}', [TestController::class, 'destroy'])->name('posts.destroy');
-Route::put('/posts/{id}', [TestController::class, 'update'])->name('posts.update');
+Route::get('/', function () {
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
+});
 
+Route::get('/dashboard', function () {
+    return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/inertia-posts', function(){
+    return Inertia::render('Posts',[
+        'posts' => Post::withTrashed()->paginate(10)
+    ]);
+});
+
+require __DIR__.'/auth.php';
